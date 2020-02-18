@@ -85,58 +85,15 @@ impl<T: Pixel> PlaneData<T> {
     }
 }
 
-/// Available chroma sampling formats.
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum ChromaSampling {
-    /// Both vertically and horizontally subsampled.
-    Cs420,
-    /// Horizontally subsampled.
-    Cs422,
-    /// Not subsampled.
-    Cs444,
-    /// Monochrome.
-    Cs400,
+pub use v_frame::pixel::ChromaSampling;
+
+pub(crate) trait ChromaWeight {
+    fn get_chroma_weight(self) -> f64;
 }
 
-impl Default for ChromaSampling {
-    fn default() -> Self {
-        ChromaSampling::Cs420
-    }
-}
-
-impl ChromaSampling {
-    /// Provides the amount to right shift the luma plane dimensions to get the
-    ///  chroma plane dimensions.
-    /// Only values 0 or 1 are ever returned.
-    /// The plane dimensions must also be rounded up to accommodate odd luma plane
-    ///  sizes.
-    /// Cs400 returns None, as there are no chroma planes.
-    pub(crate) fn get_decimation(self) -> Option<(usize, usize)> {
-        use self::ChromaSampling::*;
-        match self {
-            Cs420 => Some((1, 1)),
-            Cs422 => Some((1, 0)),
-            Cs444 => Some((0, 0)),
-            Cs400 => None,
-        }
-    }
-
-    /// Calculates the size of a chroma plane for this sampling type, given the luma plane dimensions.
-    #[cfg(feature = "decode")]
-    pub(crate) fn get_chroma_dimensions(
-        self,
-        luma_width: usize,
-        luma_height: usize,
-    ) -> (usize, usize) {
-        if let Some((ss_x, ss_y)) = self.get_decimation() {
-            ((luma_width + ss_x) >> ss_x, (luma_height + ss_y) >> ss_y)
-        } else {
-            (0, 0)
-        }
-    }
-
+impl ChromaWeight for ChromaSampling {
     /// The relative impact of chroma planes compared to luma
-    pub(crate) fn get_chroma_weight(self) -> f64 {
+    fn get_chroma_weight(self) -> f64 {
         match self {
             ChromaSampling::Cs420 => 0.25,
             ChromaSampling::Cs422 => 0.5,

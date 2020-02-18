@@ -10,6 +10,7 @@
 use crate::video::decode::Decoder;
 use crate::video::pixel::CastFromPrimitive;
 use crate::video::pixel::Pixel;
+use crate::video::ChromaWeight;
 use crate::video::{FrameInfo, PlanarMetrics, PlaneData, VideoMetric};
 use std::error::Error;
 
