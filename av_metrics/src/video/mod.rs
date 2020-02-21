@@ -14,6 +14,7 @@ use std::error::Error;
 #[cfg(feature = "decode")]
 pub use decode::*;
 pub use pixel::*;
+pub use v_frame::plane::Plane;
 
 /// A container holding the data for one video frame. This includes all planes
 /// of the video. Currently, only YUV/YCbCr format is supported. Bit depths up to 16-bit
@@ -26,7 +27,7 @@ pub struct FrameInfo<T: Pixel> {
     /// - 0 - Y/Luma plane
     /// - 1 - U/Cb plane
     /// - 2 - V/Cr plane
-    pub planes: [PlaneData<T>; 3],
+    pub planes: [Plane<T>; 3],
     /// The number of bits per pixel.
     pub bit_depth: usize,
     /// The chroma sampling format of the video. Most videos are in 4:2:0 format.
@@ -58,29 +59,17 @@ impl<T: Pixel> FrameInfo<T> {
     }
 }
 
-/// Contains the data for one plane in a video frame. For chroma planes, this data is
-/// represented in the original chroma sampling. E.g. if this is a 4:2:0 video clip,
-/// the chroma planes will have half the resolution, in each dimension, of the luma
-/// plane.
-#[derive(Clone, Debug)]
-pub struct PlaneData<T: Pixel> {
-    /// The width, in pixels, of this plane.
-    pub width: usize,
-    /// The height, in pixels, of this plane.
-    pub height: usize,
-    /// A plane's pixels are contained in this `Vec`, in row-major order.
-    /// A `u8` should be used for low-bit-depth video, and `u16` for high-bit-depth.
-    pub data: Vec<T>,
+pub(crate) trait PlaneCompare {
+    fn can_compare(&self, other: &Self) -> Result<(), MetricsError>;
 }
 
-impl<T: Pixel> PlaneData<T> {
-    pub(crate) fn can_compare(&self, other: &Self) -> Result<(), MetricsError> {
-        if self.width != other.width || self.height != other.height {
+impl<T:Pixel> PlaneCompare for Plane<T> {
+    fn can_compare(&self, other: &Self) -> Result<(), MetricsError>{
+        if self.cfg != other.cfg {
             return Err(MetricsError::InputMismatch {
                 reason: "Video resolution does not match",
             });
         }
-
         Ok(())
     }
 }

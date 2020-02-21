@@ -11,7 +11,8 @@ use crate::video::decode::Decoder;
 use crate::video::pixel::CastFromPrimitive;
 use crate::video::pixel::Pixel;
 use crate::video::ChromaWeight;
-use crate::video::{FrameInfo, PlanarMetrics, PlaneData, VideoMetric};
+use v_frame::plane::Plane;
+use crate::video::{FrameInfo, PlanarMetrics, VideoMetric};
 use std::error::Error;
 
 /// Calculates the PSNR-HVS score between two videos. Higher is better.
@@ -140,8 +141,8 @@ const CSF_CR420: [[f64; 8]; 8] = [
 ];
 
 fn calculate_plane_psnr_hvs<T: Pixel>(
-    plane1: &PlaneData<T>,
-    plane2: &PlaneData<T>,
+    plane1: &Plane<T>,
+    plane2: &Plane<T>,
     plane_idx: usize,
     bit_depth: usize,
 ) -> f64 {
@@ -179,8 +180,8 @@ fn calculate_plane_psnr_hvs<T: Pixel>(
         }
     }
 
-    let height = plane1.height;
-    let width = plane1.width;
+    let height = plane1.cfg.height;
+    let width = plane1.cfg.width;
     let mut p1 = [0i16; 8 * 8];
     let mut p2 = [0i16; 8 * 8];
     let mut dct_p1 = [0i32; 8 * 8];

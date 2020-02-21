@@ -8,7 +8,8 @@
 use crate::video::decode::Decoder;
 use crate::video::pixel::CastFromPrimitive;
 use crate::video::pixel::Pixel;
-use crate::video::{FrameInfo, PlanarMetrics, PlaneData, VideoMetric};
+use v_frame::plane::Plane;
+use crate::video::{FrameInfo, PlanarMetrics, VideoMetric};
 use std::error::Error;
 
 /// Calculates the PSNR for two videos. Higher is better.
@@ -135,15 +136,15 @@ fn calculate_summed_psnr(metrics: &[PsnrMetrics]) -> f64 {
 /// Calculate the PSNR metrics for a `Plane` by comparing the original (uncompressed) to
 /// the compressed version.
 fn calculate_plane_psnr_metrics<T: Pixel>(
-    plane1: &PlaneData<T>,
-    plane2: &PlaneData<T>,
+    plane1: &Plane<T>,
+    plane2: &Plane<T>,
     bit_depth: usize,
 ) -> PsnrMetrics {
     let sq_err = calculate_plane_total_squared_error(plane1, plane2);
     let max = (1 << bit_depth) - 1;
     PsnrMetrics {
         sq_err,
-        n_pixels: plane1.width * plane1.height,
+        n_pixels: plane1.cfg.width * plane1.cfg.height,
         sample_max: max,
     }
 }
@@ -159,8 +160,8 @@ fn calculate_psnr(metrics: PsnrMetrics) -> f64 {
 /// Calculate the squared error for a `Plane` by comparing the original (uncompressed)
 /// to the compressed version.
 fn calculate_plane_total_squared_error<T: Pixel>(
-    plane1: &PlaneData<T>,
-    plane2: &PlaneData<T>,
+    plane1: &Plane<T>,
+    plane2: &Plane<T>,
 ) -> f64 {
     plane1
         .data

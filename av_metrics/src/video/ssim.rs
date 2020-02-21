@@ -13,7 +13,8 @@ use crate::video::decode::Decoder;
 use crate::video::pixel::CastFromPrimitive;
 use crate::video::pixel::Pixel;
 use crate::video::ChromaWeight;
-use crate::video::{FrameInfo, PlanarMetrics, PlaneData, VideoMetric};
+use v_frame::plane::Plane;
+use crate::video::{FrameInfo, PlanarMetrics, VideoMetric};
 use std::cmp;
 use std::error::Error;
 use std::f64::consts::{E, PI};
@@ -75,8 +76,8 @@ impl VideoMetric for Ssim {
         let sample_max = (1 << frame1.bit_depth) - 1;
 
         let y_kernel = build_gaussian_kernel(
-            frame1.planes[0].height as f64 * 1.5 / 256.0,
-            cmp::min(frame1.planes[0].width, frame1.planes[0].height),
+            frame1.planes[0].cfg.height as f64 * 1.5 / 256.0,
+            cmp::min(frame1.planes[0].cfg.width, frame1.planes[0].cfg.height),
             KERNEL_WEIGHT,
         );
         let y = calculate_plane_ssim(
@@ -87,8 +88,8 @@ impl VideoMetric for Ssim {
             &y_kernel,
         );
         let u_kernel = build_gaussian_kernel(
-            frame1.planes[1].height as f64 * 1.5 / 256.0,
-            cmp::min(frame1.planes[1].width, frame1.planes[1].height),
+            frame1.planes[1].cfg.height as f64 * 1.5 / 256.0,
+            cmp::min(frame1.planes[1].cfg.width, frame1.planes[1].cfg.height),
             KERNEL_WEIGHT,
         );
         let u = calculate_plane_ssim(
@@ -99,8 +100,8 @@ impl VideoMetric for Ssim {
             &u_kernel,
         );
         let v_kernel = build_gaussian_kernel(
-            frame1.planes[2].height as f64 * 1.5 / 256.0,
-            cmp::min(frame1.planes[2].width, frame1.planes[2].height),
+            frame1.planes[2].cfg.height as f64 * 1.5 / 256.0,
+            cmp::min(frame1.planes[2].cfg.width, frame1.planes[2].cfg.height),
             KERNEL_WEIGHT,
         );
         let v = calculate_plane_ssim(
@@ -245,8 +246,8 @@ const SSIM_K1: f64 = 0.01 * 0.01;
 const SSIM_K2: f64 = 0.03 * 0.03;
 
 fn calculate_plane_ssim<T: Pixel>(
-    plane1: &PlaneData<T>,
-    plane2: &PlaneData<T>,
+    plane1: &Plane<T>,
+    plane2: &Plane<T>,
     sample_max: usize,
     vert_kernel: &[i64],
     horiz_kernel: &[i64],
@@ -256,8 +257,8 @@ fn calculate_plane_ssim<T: Pixel>(
     calculate_plane_ssim_internal(
         &vec1,
         &vec2,
-        plane1.width,
-        plane1.height,
+        plane1.cfg.width,
+        plane1.cfg.height,
         sample_max,
         vert_kernel,
         horiz_kernel,
@@ -342,8 +343,8 @@ fn calculate_plane_ssim_internal(
 }
 
 fn calculate_plane_msssim<T: Pixel>(
-    plane1: &PlaneData<T>,
-    plane2: &PlaneData<T>,
+    plane1: &Plane<T>,
+    plane2: &Plane<T>,
     bit_depth: usize,
 ) -> f64 {
     const KERNEL_SHIFT: usize = 10;
@@ -356,8 +357,8 @@ fn calculate_plane_msssim<T: Pixel>(
     let mut sample_max = (1 << bit_depth) - 1;
     let mut ssim = [0.0; 5];
     let mut cs = [0.0; 5];
-    let mut width = plane1.width;
-    let mut height = plane1.height;
+    let mut width = plane1.cfg.width;
+    let mut height = plane1.cfg.height;
     let mut plane1 = plane_to_vec(plane1);
     let mut plane2 = plane_to_vec(plane2);
 
@@ -415,7 +416,7 @@ fn build_gaussian_kernel(sigma: f64, max_len: usize, kernel_weight: usize) -> Ve
     kernel
 }
 
-fn plane_to_vec<T: Pixel>(input: &PlaneData<T>) -> Vec<u32> {
+fn plane_to_vec<T: Pixel>(input: &Plane<T>) -> Vec<u32> {
     input.data.iter().map(|pix| u32::cast_from(*pix)).collect()
 }
 
