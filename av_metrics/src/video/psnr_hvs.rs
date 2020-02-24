@@ -11,9 +11,9 @@ use crate::video::decode::Decoder;
 use crate::video::pixel::CastFromPrimitive;
 use crate::video::pixel::Pixel;
 use crate::video::ChromaWeight;
-use v_frame::plane::Plane;
 use crate::video::{FrameInfo, PlanarMetrics, VideoMetric};
 use std::error::Error;
+use v_frame::plane::Plane;
 
 /// Calculates the PSNR-HVS score between two videos. Higher is better.
 #[cfg(feature = "decode")]

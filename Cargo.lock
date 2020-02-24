@@ -643,7 +643,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "v_frame"
 version = "0.1.0"
-source = "git+https://github.com/xiph/rav1e.git#41464e701e6ea2052120e1a14c7b9e68de3b563c"
+source = "git+https://github.com/xiph/rav1e.git#bcd3a22fb65e1088741b29e83923252c173fcb9a"
 dependencies = [
  "cfg-if 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "noop_proc_macro 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",

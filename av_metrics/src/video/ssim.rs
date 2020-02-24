@@ -13,11 +13,11 @@ use crate::video::decode::Decoder;
 use crate::video::pixel::CastFromPrimitive;
 use crate::video::pixel::Pixel;
 use crate::video::ChromaWeight;
-use v_frame::plane::Plane;
 use crate::video::{FrameInfo, PlanarMetrics, VideoMetric};
 use std::cmp;
 use std::error::Error;
 use std::f64::consts::{E, PI};
+use v_frame::plane::Plane;
 
 /// Calculates the SSIM score between two videos. Higher is better.
 #[cfg(feature = "decode")]
@@ -342,11 +342,7 @@ fn calculate_plane_ssim_internal(
     (ssim / ssimw, cs / ssimw)
 }
 
-fn calculate_plane_msssim<T: Pixel>(
-    plane1: &Plane<T>,
-    plane2: &Plane<T>,
-    bit_depth: usize,
-) -> f64 {
+fn calculate_plane_msssim<T: Pixel>(plane1: &Plane<T>, plane2: &Plane<T>, bit_depth: usize) -> f64 {
     const KERNEL_SHIFT: usize = 10;
     const KERNEL_WEIGHT: usize = 1 << KERNEL_SHIFT;
     // These come from the original MS-SSIM implementation paper:
